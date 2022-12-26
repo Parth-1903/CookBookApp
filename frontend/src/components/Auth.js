@@ -5,7 +5,8 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { authActions } from "../store";
 import { useNavigate } from "react-router-dom";
-import { BACKEND_URL } from "../util";
+import { BACKEND_URL, errorMessage, getError } from "../util";
+import { toast } from 'react-toastify';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -27,40 +28,29 @@ const Auth = () => {
   };
 
   const sendRequest = async (type = "login") => {
-    // try{
-    //   const res = await fetch(`${BACKEND_URL}/user/${type}`,{
-    //     method:"POST",
-    //     headers:{
-    //       "Content-Type":"application/json",
-    //       "Access-Control-Allow-Origin":"*"
-    //     },
-    //     mode:"cors",
-    //     body:JSON.stringify(data)
-    //   })
-    // }catch(err){
-    //   console.log();
-    // }
-    const res = await axios
-      .post(`${BACKEND_URL}/user/${type}`, {
+    try {
+      const res = await axios.post(`${BACKEND_URL}/user/${type}`, {
         name: inputs.name,
         email: inputs.email,
         password: inputs.password,
-      })
-      .catch((err) => console.log(err));
+      });
 
-    const data = await res.data;
-    console.log(data);
-    return data;
+      const data = await res.data;
+      console.log(data);
+      return data;
+    } catch (err) {
+        toast.error(getError(err))
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(inputs);
+    // console.log(inputs);
     if (isSignup) {
       sendRequest("signup")
         .then((data) => localStorage.setItem("userId", data.user._id))
         .then(() => dispatch(authActions.login()))
-        .then(() => navigate("/recipes"))
+        .then(() => navigate("/"))
         .then((data) => console.log(data));
     } else {
       sendRequest()
@@ -73,6 +63,7 @@ const Auth = () => {
 
   return (
     <div>
+      {/* <ToastContainer /> */}
       <form onSubmit={handleSubmit}>
         <Box
           maxWidth={400}

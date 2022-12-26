@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Button,
   Card,
   CardContent,
   CardHeader,
@@ -8,11 +9,13 @@ import {
   Typography,
 } from "@mui/material";
 import { Box } from "@mui/system";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ModeEditOutlineIcon from "@mui/icons-material/ModeEditOutline";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { useNavigate } from "react-router-dom";
-import { BACKEND_URL } from "../util";
+import { BACKEND_URL, getError } from "../util";
+import { toast } from 'react-toastify';
 
 const Recipe = ({
   title,
@@ -22,6 +25,7 @@ const Recipe = ({
   userName,
   isUser,
   id,
+  flag,
 }) => {
   const navigate = useNavigate();
   const handleEdit = (e) => {
@@ -31,6 +35,9 @@ const Recipe = ({
   // const res = await axios.delete(`${BACKEND_URL}/recipes/${id}`).catch(err=>console.log(err));
   // const data = await res.data;
   // return data;
+  const [isChange, setisChange] = useState(false);
+
+
   const deleteRequest = async () => {
     await fetch(`${BACKEND_URL}/recipes/${id}`, {
       method: "delete",
@@ -38,10 +45,39 @@ const Recipe = ({
   };
 
   const handleDelete = () => {
-    deleteRequest()
-      .then(() => navigate("/"))
-      .then(() => navigate("/recipes"));
+    setisChange(true);
+    deleteRequest().then(() => navigate("/myRecipes"));
   };
+  const data = {
+    id: id,
+    userId: localStorage.getItem("userId"),
+  };
+  const handleaddFav = async () => {
+    // console.log(`THis is my id ${id}`);
+    // console.log(`THis is my id ${localStorage.getItem("userId")}`);
+    try{
+    fetch(`${BACKEND_URL}/recipes/like`, {
+      method: "put",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }).then((res)=>res.json()).then((data)=>{
+      if(data.message==="Already Liked"){
+        toast.error(data.message)
+      }
+      else{
+        toast.success("Liked")
+      }
+    })
+  }catch(err){
+    toast.error(getError(err).message)
+  }
+    // navigate('/fav')
+  };
+
+  // useEffect(()=>{
+  //   deleteRequest().then(() => navigate("/recipes"));
+  // },[isChange])
+
   return (
     <div>
       <Card
@@ -56,13 +92,20 @@ const Recipe = ({
           },
         }}
       >
-        {isUser && (
+        {flag && (
           <Box display="flex">
             <IconButton onClick={handleEdit} sx={{ marginLeft: "auto" }}>
               <ModeEditOutlineIcon color="warning" />
             </IconButton>
             <IconButton onClick={handleDelete}>
               <DeleteForeverIcon color="error" />
+            </IconButton>
+          </Box>
+        )}
+        {!flag && (
+          <Box display="flex">
+            <IconButton onClick={handleaddFav} sx={{ marginLeft: "auto" }}>
+              <StarBorderIcon color="warning" />
             </IconButton>
           </Box>
         )}

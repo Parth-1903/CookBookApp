@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import AddRecipe from "./components/AddRecipe";
 import Auth from "./components/Auth";
@@ -8,6 +8,10 @@ import Recipes from "./components/Recipes";
 import UserRecipe from "./components/UserRecipe";
 import { useDispatch, useSelector } from "react-redux";
 import { authActions } from "./store";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import FavRecipe from "./components/FavRecipe";
+
 
 function App() {
   const dispatch = useDispatch();
@@ -24,6 +28,7 @@ function App() {
         <Header />
       </header>
       <main>
+        <ToastContainer position="bottom-center" limit={1}></ToastContainer>
         <Routes>
           {!isLoggedIn ? (
             <Route path="/auth" element={<Auth />} />
@@ -33,6 +38,7 @@ function App() {
               <Route path="/recipes/add" element={<AddRecipe />} />
               <Route path="/myRecipes" element={<UserRecipe />} />
               <Route path="/myRecipes/:id" element={<RecipeDetail />} />
+              <Route path="/favourite" element={<FavRecipe/>}/>
             </>
           )}
         </Routes>

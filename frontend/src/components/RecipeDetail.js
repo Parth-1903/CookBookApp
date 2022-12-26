@@ -1,5 +1,6 @@
-import { Button, InputLabel, TextField, Typography } from "@mui/material";
+import { Button, InputLabel, TextareaAutosize, TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BACKEND_URL } from "../util";
@@ -25,6 +26,8 @@ const RecipeDetail = () => {
     const data = res.json();
     return data;
   };
+
+
   useEffect(() => {
     fetchDetails().then((data) => {
       setRecipe(data.recipe);
@@ -96,8 +99,9 @@ const RecipeDetail = () => {
               margin="auto"
               variant="outlined"
             />
+            
             <InputLabel>Ingredients</InputLabel>
-            <TextField
+            <TextareaAutosize
               name="ingredients"
               onChange={handleChange}
               value={inputs.ingredients}
@@ -105,14 +109,14 @@ const RecipeDetail = () => {
               variant="outlined"
             />
             <InputLabel>Instruction</InputLabel>
-            <TextField
+            <TextareaAutosize
               name="instruction"
               onChange={handleChange}
               value={inputs.instruction}
               margin="auto"
               variant="outlined"
             />
-            <InputLabel>image</InputLabel>
+            <InputLabel>Image</InputLabel>
             <TextField
               name="image"
               onChange={handleChange}

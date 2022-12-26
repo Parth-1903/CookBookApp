@@ -1,18 +1,34 @@
-import { Button, InputLabel, TextField, Typography } from "@mui/material";
+import {
+  Button,
+  InputLabel,
+  TextareaAutosize,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { Box } from "@mui/system";
 import React, { useState } from "react";
 import { BACKEND_URL } from "../util";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const AddRecipe = () => {
   const navigate = useNavigate();
+  const [search, setSearch] = useState([]);
   const [inputs, setinputs] = useState({
     title: "",
     ingredients: "",
     instruction: "",
     image: "",
-    user:localStorage.getItem("userId"),
+    user: localStorage.getItem("userId"),
   });
+  const searchHandler = async () => {
+    const { data } = await axios.get(
+      `https://forkify-api.herokuapp.com/api/search?q=${inputs.title}`
+    );
+    console.log(data.recipes);
+    setSearch(data.recipes);
+  };
 
   const handleChange = (e) => {
     setinputs((prevState) => ({
@@ -23,15 +39,15 @@ const AddRecipe = () => {
 
   const sendRequest = async (data) => {
     try {
-        const res = await fetch(`${BACKEND_URL}/recipes/add`,{
-          method:"POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
-          },
-          mode:"cors",
-          body:JSON.stringify(data)
-        })
+      const res = await fetch(`${BACKEND_URL}/recipes/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+        mode: "cors",
+        body: JSON.stringify(data),
+      });
       // const res = await axios.post(`${BACKEND_URL}/recipes/add`, {
       //   title: inputs.title,
       //   ingredients: inputs.ingredients,
@@ -46,9 +62,34 @@ const AddRecipe = () => {
     }
   };
 
+  const saveHandler = async (id) => {
+    try {
+      console.log(id);
+      const { data } = await axios.get(
+        `https://forkify-api.herokuapp.com/api/get?rId=${id}`
+      );
+      console.log(data);
+      const arr = data.recipe.ingredients.join(" ");
+      setinputs((prev) => ({
+        ...prev,
+        title: data.recipe.title,
+        ingredients: arr,
+        image: data.recipe.image_url,
+      }));
+    } catch (err) {}
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(inputs);
+    if (
+      !inputs.title ||
+      !inputs.instruction ||
+      !inputs.ingredients ||
+      !inputs.image
+    ) {
+      toast.error("Please fill all the inputs")
+      return
+    }
     sendRequest(inputs)
       .then((data) => console.log(data))
       .then(() => navigate("/recipes"));
@@ -86,9 +127,29 @@ const AddRecipe = () => {
             margin="normal"
             variant="outlined"
           />
+          <Button variant="contained" color="warning" onClick={searchHandler}>
+            SUGGESTION
+          </Button>
+          <div className="dropdown">
+            <button className="dropbtn">Dropdown</button>
+            <div className="dropdown-content">
+              {search.map((s) => {
+                return (
+                  <a
+                    key={s.recipe_id}
+                    onClick={() => {
+                      saveHandler(s.recipe_id);
+                    }}
+                  >
+                    {s.title}
+                  </a>
+                );
+              })}
+            </div>
+          </div>
 
           <InputLabel>Ingredients</InputLabel>
-          <TextField
+          <TextareaAutosize
             name="ingredients"
             onChange={handleChange}
             value={inputs.ingredients}
@@ -97,7 +158,7 @@ const AddRecipe = () => {
           />
 
           <InputLabel>Instruction</InputLabel>
-          <TextField
+          <TextareaAutosize
             name="instruction"
             onChange={handleChange}
             value={inputs.instruction}

@@ -33,6 +33,7 @@ export const signup = async (req, res) => {
     email,
     password: hashPassword,
     receipe: [],
+    likes: []
   });
 
   try {
@@ -49,7 +50,7 @@ export const login = async(req,res) => {
     try{
         checkUser = await User.findOne({email})
     }catch(err){
-        console.log(err);
+        res.status(400).json({message:"error"})
     }
 
     if(!checkUser){
@@ -57,7 +58,7 @@ export const login = async(req,res) => {
     }
 
     const isPasswordCorrect = bcrypt.compareSync(password,checkUser.password)
-    if(isPasswordCorrect){
+    if(!isPasswordCorrect){
         return res.status(400).json({message:"Incorrect Password"});
     }
     return res.status(200).json({message:"Login Successfull", user:checkUser})
